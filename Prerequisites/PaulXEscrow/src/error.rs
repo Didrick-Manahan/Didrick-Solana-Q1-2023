@@ -12,6 +12,14 @@ pub enum EscrowError {
     /// Not Rent Exempt
     #[error("Not Rent Exempt")]
     NotRentExempt,
+
+    /// Expected Amount Mismatch
+    #[error("Expected Amount Mismatch")]
+    ExpectedAmountMismatch,
+
+    /// Amount Overflow
+    #[error("Amount Overflow")]
+    AmountOverflow,
 }
 
 //implementing a generic trait - "From" trait. The reason we do this conversion is that the entrypoint returns a Result of either nothing or a ProgramError.
