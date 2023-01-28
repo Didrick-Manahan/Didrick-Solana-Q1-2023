@@ -5,10 +5,12 @@ use solana_program::{
     entrypoint::ProgramResult,
     msg,
     program_error::ProgramError,
+    program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
+    sysvar::{rent::Rent, Sysvar},
 }; //we saw this also in entrypoint.rs
 
-use crate::instruction::EscrowInstruction; //getting from instruction.rs
+use crate::{error::EscrowError, instruction::EscrowInstruction}; //getting from instruction.rs
 
 pub struct Processor;
 impl Processor {
@@ -47,6 +49,19 @@ impl Processor {
         if *token_to_receive_account.owner != spl_token::id() {
             //check that this is actually owned by the token program (changes aren't being made, so we need explicit check). If we didnt have this check, instead of Alice's transaction failing, Bob's would fail!
             return Err(ProgramError::IncorrectProgramId);
+        }
+
+        let escrow_account = next_account_info(account_info_iter)?;
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        //checking if account is rent exempt
+        if !rent.is_exempt(escrow_account.lamports(), escrow_account.data_len()) {
+            return Err(EscrowError::NotRentExempt.into());
+        }
+
+        let mut escrow_info = Escrow::unpack_unchecked(&escrow_account.try_borrow_data()?)?; //unpack_unchecked -> function inside state.rs
+        if escrow_info.is_initialized() {
+            return Err(ProgramError::AccountAlreadyInitialized);
         }
 
         Ok(())

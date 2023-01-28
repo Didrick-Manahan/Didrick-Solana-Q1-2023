@@ -8,6 +8,10 @@ pub enum EscrowError {
     /// Invalid instruction
     #[error("Invalid Instruction")] //thiserror is doing the fmt::Display implementation for us
     InvalidInstruction,
+
+    /// Not Rent Exempt
+    #[error("Not Rent Exempt")]
+    NotRentExempt,
 }
 
 //implementing a generic trait - "From" trait. The reason we do this conversion is that the entrypoint returns a Result of either nothing or a ProgramError.
