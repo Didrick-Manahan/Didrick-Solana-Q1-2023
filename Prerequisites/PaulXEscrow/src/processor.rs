@@ -10,7 +10,7 @@ use solana_program::{
     sysvar::{rent::Rent, Sysvar},
 }; //we saw this also in entrypoint.rs
 
-use crate::{error::EscrowError, instruction::EscrowInstruction}; //getting from instruction.rs
+use crate::{error::EscrowError, instruction::EscrowInstruction, state::Escrow}; //getting from instruction.rs
 
 pub struct Processor;
 impl Processor {
@@ -59,7 +59,7 @@ impl Processor {
             return Err(EscrowError::NotRentExempt.into());
         }
 
-        let mut escrow_info = Escrow::unpack_unchecked(&escrow_account.try_borrow_data()?)?; //unpack_unchecked -> function inside state.rs
+        let mut escrow_info = Escrow::unpack_unchecked(&escrow_account.try_borrow_data()?)?; //unpack_unchecked -> function inside state.rs. We never defined it but traits can have default functions that may be overridden but don't have to be!
         if escrow_info.is_initialized() {
             return Err(ProgramError::AccountAlreadyInitialized);
         }
