@@ -20,6 +20,14 @@ pub enum EscrowError {
     /// Amount Overflow
     #[error("Amount Overflow")]
     AmountOverflow,
+
+    /// Escrow Time Overflow
+    #[error("Escrow Time Overflow")]
+    EscrowTimeOverflow,
+
+    /// Escrow Time Unlock
+    #[error("Escrow Time Lock")]
+    EscrowTimeUnlock,
 }
 
 //implementing a generic trait - "From" trait. The reason we do this conversion is that the entrypoint returns a Result of either nothing or a ProgramError.

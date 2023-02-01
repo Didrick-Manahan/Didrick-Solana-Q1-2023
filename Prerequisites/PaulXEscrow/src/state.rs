@@ -5,6 +5,7 @@
     2) serializing and deserializing such objects from and into arrays of u8 respectively.
 */
 use solana_program::{
+    clock::Clock,
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
@@ -25,6 +26,10 @@ pub struct Escrow {
 
     //Used to make sure Bob send's enough of his tokens (no cheating!)
     pub expected_amount: u64,
+
+    //unlock and lock times
+    pub unlock_time: u64,
+    pub time_out: u64,
 }
 
 impl Sealed for Escrow {} //Solana's version of Rust's Sized trait
@@ -36,7 +41,7 @@ impl IsInitialized for Escrow {
 }
 
 impl Pack for Escrow {
-    const LEN: usize = 105;
+    const LEN: usize = 121;
 
     //DESERIALIZATION OF STATE
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
@@ -49,7 +54,9 @@ impl Pack for Escrow {
             temp_token_account_pubkey,
             initializer_token_to_receive_account_pubkey,
             expected_amount,
-        ) = array_refs![src, 1, 32, 32, 32, 8];
+            unlock_time,
+            time_out,
+        ) = array_refs![src, 1, 32, 32, 32, 8, 8, 8];
         let is_initialized = match is_initialized {
             [0] => false,
             [1] => true,
@@ -64,6 +71,8 @@ impl Pack for Escrow {
                 *initializer_token_to_receive_account_pubkey,
             ),
             expected_amount: u64::from_le_bytes(*expected_amount),
+            time_out: 100,
+            unlock_time: 1000,
         })
     }
 
@@ -76,7 +85,9 @@ impl Pack for Escrow {
             temp_token_account_pubkey_dst,
             initializer_token_to_receive_account_pubkey_dst,
             expected_amount_dst,
-        ) = mut_array_refs![dst, 1, 32, 32, 32, 8];
+            unlock_time,
+            time_out,
+        ) = mut_array_refs![dst, 1, 32, 32, 32, 8, 8, 8];
 
         let Escrow {
             is_initialized,
@@ -84,6 +95,8 @@ impl Pack for Escrow {
             temp_token_account_pubkey,
             initializer_token_to_receive_account_pubkey,
             expected_amount,
+            time_out,
+            unlock_time,
         } = self;
 
         is_initialized_dst[0] = *is_initialized as u8;
